@@ -1,7 +1,7 @@
 import java.util.*;
 import java.io.*;
 // Day 15 REDO
-public class Day15_2 {
+public class Day15_2_Comments {
     public static final char WALL = '#', BOX = 'O', EMPTY = '.', ROBOT = '@';
     public static final char LBOX = '[',  RBOX = ']';
     public static final String UP = "^", DOWN = "v", RIGHT = ">", LEFT = "<";
