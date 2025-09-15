@@ -6,7 +6,7 @@ public class day16 {
     public static int[] dc = {1, 0, -1, 0};
     public static char SPACE = '.', START = 'S', END = 'E', WALL = '#', PATH = 'O';
     public static void main(String[] args) throws IOException{
-        Scanner in = new Scanner(new FileReader("/Users/samueld/Documents/Code/aoc/2024/Day 16/day16.in"));
+        Scanner in = new Scanner(new FileReader("./day16.in"));
         int n = 15;
         char[][] grid = new char[n][n];
 
