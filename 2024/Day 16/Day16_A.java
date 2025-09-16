@@ -2,7 +2,9 @@ import java.util.*;
 import java.io.*;
 
 public class Day16_A {
-    public static char SPACE = '.', START = 'S', END = 'E', WALL = '#';
+    public static char SPACE = '.', START = 'S', END = 'E', WALL = '#', PATH = 'O';
+    public static int[] dr = {0, 1, 0, -1}; // dirs are E/S/W/N
+    public static int[] dc = {1, 0, -1, 0};
 
     /*
      * This is a helper class that's usable in PriorityQueues because it implements Comparable.
@@ -27,23 +29,19 @@ public class Day16_A {
     }
     public static void main(String[] args) throws IOException {
         char[][] grid = inputGrid();
-        displayGrid(grid);
-        System.out.println(dijkstra(grid));
+        solve(grid);
     }
 
-    /*
-     * Dijkstra's Algorithm - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
-     * 
-     * This is a fast single-source shortest-path algorithm. It's algorithmic complexity
-     * is something like O(E + VlogV) where E is the number of edges and V is the number of nodes.
-     */
-    public static int dijkstra(char[][] grid) {
-        int[][][] distances = new int[grid.length][grid[0].length][4];
-        Queue<Entry> frontier = new PriorityQueue<Entry>();
+    public static void solve(char[][] grid) {
+        // Setup of variables, finding of start/end points
+        int[][][] fward_distances = new int[grid.length][grid[0].length][4];
+        int[][][] bward_distances = new int[grid.length][grid[0].length][4];
+        PriorityQueue<Entry> frontier = new PriorityQueue<Entry>();
         int endX = -1, endY = -1;
         for (int i = 0; i < grid.length; i++) {
             for (int j = 0; j < grid[0].length; j++) {
-                Arrays.fill(distances[i][j], Integer.MAX_VALUE);
+                Arrays.fill(fward_distances[i][j], Integer.MAX_VALUE);
+                Arrays.fill(bward_distances[i][j], Integer.MAX_VALUE);
                 if (grid[i][j] == START) {
                     frontier.offer(new Entry(i, j, 0, 0));
                 }
@@ -54,21 +52,62 @@ public class Day16_A {
             }
         }
 
+        // Perform dijkstra's from the start point and print the shortest path to the end.
+        dijkstra(grid, frontier, fward_distances);
+        int shortest_path = Integer.MAX_VALUE;
+        ArrayList<Integer> ending_directions = new ArrayList<Integer>();
+        for (int d = 0; d < 4; d++) {
+            if (fward_distances[endX][endY][d] < shortest_path) {
+                ending_directions.clear();
+                ending_directions.add(d);
+                shortest_path = fward_distances[endX][endY][d];
+            }
+            else if (fward_distances[endX][endY][d] == shortest_path) {
+                ending_directions.add(d);
+            }
+        }
+        System.out.println(shortest_path);
+
+        // Perform dijkstra's from the end point, facing backwards.
+        for (Integer dir : ending_directions) {
+            frontier.offer(new Entry(endX, endY, (dir+2)%4, 0));
+        }
+        dijkstra(grid, frontier, bward_distances);
+
+        // Count the locations where the distance from the end point plus the
+        // distance from the start point equals the shortest path. 
+        int o_count = 0;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[0].length; j++) {
+                for (int d = 0; d < 4; d++) {
+                    int forward_dist = fward_distances[i][j][d];
+                    int backward_dist = bward_distances[i][j][(d+2)%4];
+                    if (forward_dist + backward_dist == shortest_path) {
+                        grid[i][j] = PATH;
+                    }
+                }
+                if (grid[i][j] == PATH) {
+                    o_count++;
+                }
+            }
+        }
+        // displayGrid(grid);
+        System.out.println(o_count);
+    }
+
+    public static void dijkstra(char[][] grid, PriorityQueue<Entry> frontier, int[][][] distances) {
         while (!frontier.isEmpty()) {
             Entry visit = frontier.poll();
-            if (visit.x == endX && visit.y == endY) return visit.distance;
             if (distances[visit.x][visit.y][visit.dir] <= visit.distance) continue;
             
             distances[visit.x][visit.y][visit.dir] = visit.distance;
-            // System.out.println(visit.distance + " to x,y,d = " + visit.x + "," + visit.y + "," + visit.dir);
-
+            
             ArrayList<Entry> neighbors = getNeighbors(grid, visit);
             for (Entry n : neighbors) {
                 if (distances[n.x][n.y][n.dir] < n.distance) continue;
                 frontier.offer(n);
             }
         }
-        return -1;
     }
 
     /*
@@ -76,9 +115,7 @@ public class Day16_A {
      */
     private static ArrayList<Entry> getNeighbors(char[][] grid, Entry e) {
         ArrayList<Entry> ret = new ArrayList<Entry>();
-        // can it move forward? dirs are E/S/W/N.
-        int[] dr = {0, 1, 0, -1};
-        int[] dc = {1, 0, -1, 0};
+        // can it move forward?
         int newX = e.x + dr[e.dir];
         int newY = e.y + dc[e.dir];
         if (newX >= 0 && newX < grid.length) {
@@ -88,6 +125,7 @@ public class Day16_A {
                 }
             }
         }
+        // it can definitely turn 90˚
         ret.add(new Entry(e.x, e.y, (e.dir+1)%4, e.distance+1000));
         ret.add(new Entry(e.x, e.y, (e.dir+3)%4, e.distance+1000));
         return ret;
