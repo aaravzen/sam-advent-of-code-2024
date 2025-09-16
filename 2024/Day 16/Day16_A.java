@@ -4,6 +4,11 @@ import java.io.*;
 public class Day16_A {
     public static char SPACE = '.', START = 'S', END = 'E', WALL = '#';
 
+    /*
+     * This is a helper class that's usable in PriorityQueues because it implements Comparable.
+     * 
+     * This is a necessary prerequisite to running dijkstra's algorithm.
+     */
     static class Entry implements Comparable<Entry> {
         public int x;
         public int y;
@@ -26,6 +31,12 @@ public class Day16_A {
         System.out.println(dijkstra(grid));
     }
 
+    /*
+     * Dijkstra's Algorithm - https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm
+     * 
+     * This is a fast single-source shortest-path algorithm. It's algorithmic complexity
+     * is something like O(E + VlogV) where E is the number of edges and V is the number of nodes.
+     */
     public static int dijkstra(char[][] grid) {
         int[][][] distances = new int[grid.length][grid[0].length][4];
         Queue<Entry> frontier = new PriorityQueue<Entry>();
@@ -60,6 +71,9 @@ public class Day16_A {
         return -1;
     }
 
+    /*
+     * This returns the possible next steps in a path, either by moving forward or turning 90˚
+     */
     private static ArrayList<Entry> getNeighbors(char[][] grid, Entry e) {
         ArrayList<Entry> ret = new ArrayList<Entry>();
         // can it move forward? dirs are E/S/W/N.
@@ -79,6 +93,9 @@ public class Day16_A {
         return ret;
     }
 
+    /*
+     * This input method works a bit more flexibly than previously; any rectangle will work.
+     */
     private static char[][] inputGrid() throws IOException {
         Scanner in = new Scanner(new FileReader("./day16.in"));
         ArrayList<char[]> lines = new ArrayList<char[]>();

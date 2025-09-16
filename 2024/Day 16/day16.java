@@ -51,6 +51,8 @@ public class day16 {
         Queue<int[]> queue = new LinkedList<>();
         for (int dir = 0; dir < 4; dir++) {
             dist[startX][startY][dir] = 0;  // Starting position at 0 seconds
+            /* I think the above is a bug? The robot starts facing East, so:
+            dist[sX][sY][N] = 1000, dist[sX][sY][S] = 1000, dist[sX][sY][W] = 2000 */
             queue.add(new int[] {startX, startY, dir});
         }
 
@@ -70,6 +72,7 @@ public class day16 {
             for (int newDirection = 0; newDirection < 4; newDirection++) {
                 if (newDirection != direction && dist[x][y][newDirection] == Integer.MAX_VALUE) {
                     dist[x][y][newDirection] = dist[x][y][direction] + 1000;
+                    /* I think this is a bug for similar reasons - 1000 only gets you 90˚. */
                     queue.offer(new int[] {x, y, newDirection});
                 }
             }
